@@ -1,0 +1,41 @@
+version: '1.0.0.{build}'
+configuration: Release
+platform:
+- x64
+environment:
+    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZ9/36Q3IboqTT1XjuzvjJ4LOqnvf/W61gWaELOqvVF1zyx/nCSDkCoTsZ2sLU5RXJan1kOyMBtoZ1jNfGYFYFpSwBna/5WQolESUo3p71gFR347ZY1/HCOU3sC9MC0blPvcvwZBjik1/oLAb8QcpJ/eui7/in7bcDZ/E7H1czY0ixhaRivUPVBVISu13w7k/N08e0nExVdnv1Sc6UaBX5gL8zWtokI6WcV6qdk0wOqwBV8DOq4zLbveBNfHVJVUISBG8n6qBjWhX4uJ2dyhcT8l5TbGjSJOm1wf5HhxNEmjgN6YjilcObnM4so32H0jc1S1v/1pr3s5170QU97DUh appveyor
+    global:
+        APPVEYOR_SAVE_CACHE_ON_ERROR: true
+image:
+  - Visual Studio 2022
+  - Ubuntu
+install:
+- cmd: cd C:/Tools/vcpkg
+- sh: cd /home/appveyor/vcpkg/
+- git pull --quiet
+- cmd: .\bootstrap-vcpkg
+- cmd: vcpkg install openssl:x64-windows
+- cmd: vcpkg install jansson:x64-windows
+- cmd: vcpkg install check:x64-windows
+- sh:  ./bootstrap-vcpkg.sh
+- sh: vcpkg install openssl:x64-linux
+- sh: vcpkg install jansson:x64-linux
+- sh: vcpkg install check:x64-linux
+
+build_script:
+- cmd: cd C:/projects/libjwt
+- cmd: set VCPKG_ROOT=C:\Tools\vcpkg
+- cmd: call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+- cmd: cmake . -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake"
+- sh: cd /home/appveyor/projects/libjwt/
+- sh: export VCPKG_ROOT=/home/appveyor/vcpkg
+- sh: cmake . -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake"
+- cmake --build .
+test: off
+on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#  - sh: export APPVEYOR_SSH_BLOCK=true
+#  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+cache:
+  - c:\tools\vcpkg\installed
+  - /home/appveyor/vcpkg/installed
