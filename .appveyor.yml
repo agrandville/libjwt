@@ -11,12 +11,14 @@ image:
   - Ubuntu
 install:
 - cmd: cd C:/Tools/vcpkg
-- sh: cd /home/appveyor/vcpkg/
-- git pull --quiet
+- cmd: git pull --quiet
 - cmd: .\bootstrap-vcpkg
 - cmd: vcpkg install openssl:x64-windows
 - cmd: vcpkg install jansson:x64-windows
 - cmd: vcpkg install check:x64-windows
+- sh: sudo apt install linux-libc-dev
+- sh: cd /home/appveyor/vcpkg/
+- sh: git pull --quiet
 - sh:  ./bootstrap-vcpkg.sh
 - sh: vcpkg install openssl:x64-linux
 - sh: vcpkg install jansson:x64-linux
