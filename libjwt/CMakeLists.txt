@@ -48,7 +48,7 @@ else ()
 endif ()
 
 if (USE_INSTALLED_JANSSON)
-    PKG_SEARCH_MODULE( JANSSON jansson )
+    find_package(jansson CONFIG REQUIRED)
 else()
     FetchContent_Declare(
     jansson
@@ -100,9 +100,9 @@ if (NOT BUILD_SHARED_LIBS AND ENABLE_PIC)
 	target_compile_options (${TARGET_NAME} PRIVATE -fPIC)
 endif ()
 
-target_link_libraries (${TARGET_NAME}
-	debug ${SSL_LIBRARIES_DEBUG} optimized ${SSL_LIBRARIES_OPTIMIZED}
-	jansson
+target_link_libraries (${TARGET_NAME} PUBLIC
+	${SSL_LIBRARIES_DEBUG}
+	jansson::jansson 
 	)
 
 install (TARGETS ${TARGET_NAME}
@@ -115,3 +115,4 @@ install (FILES
 	${PROJECT_SOURCE_DIR}/include/jwt.h
 	DESTINATION include/
 	)
+
