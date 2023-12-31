@@ -28,10 +28,10 @@ build_script:
 - cmd: cd C:/projects/libjwt
 - cmd: set VCPKG_ROOT=C:\Tools\vcpkg
 - cmd: call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-- cmd: cmake . -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake"
+- cmd: cmake . -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" -DBUILD_TESTS=1
 - sh: cd /home/appveyor/projects/libjwt/
 - sh: export VCPKG_ROOT=/home/appveyor/vcpkg
-- sh: cmake . -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake"
+- sh: cmake . -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}\scripts\buildsystems\vcpkg.cmake" -DBUILD_TESTS=1
 - cmake --build .
 test: off
 on_finish:
