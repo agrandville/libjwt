@@ -1,29 +1,62 @@
-dist: bionic
 language: c
+os: linux
+dist: bionic
 
-os:
- - linux
-arch:
- - amd64
+env:
+  global:
+    - CACHE_DIR=${TRAVIS_HOME}/cache
+    - TMP_DIR=${TRAVIS_HOME}/tmp
+    - VCPKG_DIR=${TMP_DIR}/vcpkg
+
+stages:
+ - build
  
-compiler:
-  - gcc
-addons:
-  apt:
-    packages:
-    - libjansson-dev
-    - check
-    - libssl-dev
-    - lcov
-    - gnutls-dev
-before_install:
-  - sudo pip install codecov
-  - autoreconf -fi
-script:
-  - ./configure --without-openssl
-  - make check
-  - make distclean
-  - ./configure --enable-code-coverage
-  - make check-code-coverage
-after_success:
-  - codecov
+cache:
+  timeout: 900
+  directories:
+    - $CACHE_DIR
+
+jobs:
+  include:
+    # debug builds
+    - &linux
+      stage: build
+      compiler: gcc
+      arch: amd64
+      addons:
+       apt:
+        packages:
+         - libjansson-dev
+         - check
+         - libssl-dev
+         - lcov
+         - gnutls-dev
+      script:
+	   - sudo pip install codecov
+	   - autoreconf -fi
+       - ./configure --without-openssl
+       - make check
+       - make distclean
+       - ./configure --enable-code-coverage
+       - make check-code-coverage
+      after_success:
+        - codecov
+# windows
+    - &windows
+      stage: build
+      name: windows, vs2022
+      os: windows
+      arch: amd64
+      script:
+        - pushd .
+        - choco install visualstudio2022community
+        - cd ${TMP_DIR}
+        - git clone https://github.com/microsoft/vcpkg
+        - cd ${VCPKG_DIR}
+        - ./bootstrap-vcpkg
+        - vcpkg version
+        - popd
+        - set
+        - vcpkg install --x-install-root=${CACHE_DIR}
+        - cmake -DCMAKE_TOOLCHAIN_FILE="%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake"
+        - cmake --build .
