@@ -9,7 +9,7 @@ env:
     - VCPKG_DIR=${TMP_DIR}/vcpkg
 
 stages:
- - build
+ - buildWin
  
 cache:
   timeout: 900
@@ -32,8 +32,8 @@ jobs:
          - lcov
          - gnutls-dev
       script:
-	   - sudo pip install codecov
-	   - autoreconf -fi
+       - sudo pip install codecov
+       - autoreconf -fi
        - ./configure --without-openssl
        - make check
        - make distclean
@@ -43,20 +43,29 @@ jobs:
         - codecov
 # windows
     - &windows
-      stage: build
+      stage: buildWin
       name: windows, vs2022
       os: windows
+      compiler: cl
       arch: amd64
       script:
+#       - cmd.exe //C 'C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat'
+        - mkdir "${CACHE_DIR}"
+        - mkdir "${TMP_DIR}"
+        - mkdir "${VCPKG_DIR}"
         - pushd .
-        - choco install visualstudio2022community
+        - choco install visualstudio2022community -y
+        - which cl.exe
         - cd ${TMP_DIR}
         - git clone https://github.com/microsoft/vcpkg
         - cd ${VCPKG_DIR}
-        - ./bootstrap-vcpkg
-        - vcpkg version
+        - ./bootstrap-vcpkg.bat
+        - ./vcpkg.exe version
+        - export PATH=${PATH}:"${VCPKG_DIR}"
         - popd
-        - set
-        - vcpkg install --x-install-root=${CACHE_DIR}
+#       - set
+        - vcpkg.exe install --x-install-root=${CACHE_DIR}
         - cmake -DCMAKE_TOOLCHAIN_FILE="%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake"
-        - cmake --build .
+        - cmake --build . --config RelWithDebInfo
+        - ctest -C Debug -VV
+
