@@ -1,5 +1,4 @@
-find_package (check REQUIRED)
-
+find_package(check CONFIG REQUIRED)
 enable_testing ()
 
 # Add the check target to behave like automake
@@ -28,6 +27,10 @@ foreach (TARGET_NAME ${TARGET_NAMES})
 		set_property(TARGET ${TARGET_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 	endif ()
 	target_compile_definitions (${TARGET_NAME} PRIVATE KEYDIR=\"${CMAKE_CURRENT_SOURCE_DIR}/keys\" _GNU_SOURCE)
-	target_link_libraries (${TARGET_NAME} jwt Check::check ${PLATFORM_LIBRARIES})
+	target_link_libraries (${TARGET_NAME} 
+		PRIVATE $<IF:$<TARGET_EXISTS:Check::check>,Check::check,Check::checkShared>
+		jwt ${PLATFORM_LIBRARIES}
+	)
+	
 	add_test (${TARGET_NAME} ${TARGET_NAME})
 endforeach ()
