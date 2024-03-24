@@ -55,7 +55,7 @@ jobs:
         - mkdir "${VCPKG_DIR}"
         - pushd .
         - choco install visualstudio2022community -y
-        - which cl.exe
+        - where cl.exe
         - cd ${TMP_DIR}
         - git clone https://github.com/microsoft/vcpkg
         - cd ${VCPKG_DIR}
