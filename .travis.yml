@@ -61,11 +61,16 @@ jobs:
         - cd ${VCPKG_DIR}
         - ./bootstrap-vcpkg.bat
         - ./vcpkg.exe version
+		- ./vcpkg.exe list
+		- pwd
+		- dir 
+		- echo %VCPKG_DIR%
+		- dir "%VCPKG_DIR%\scripts\buildsystems"
         - export PATH=${PATH}:"${VCPKG_DIR}"
         - popd
 #       - set
-        - vcpkg.exe install --x-install-root=${CACHE_DIR}
-        - cmake -DCMAKE_TOOLCHAIN_FILE="%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake"
+        - travis_wait 45 vcpkg.exe install --x-install-root=${CACHE_DIR}
+        - cmake . -DCMAKE_TOOLCHAIN_FILE="%VCPKG_DIR%\scripts\buildsystems\vcpkg.cmake"
         - cmake --build . --config RelWithDebInfo
         - ctest -C Debug -VV
 
