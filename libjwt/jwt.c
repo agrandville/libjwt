@@ -412,6 +412,11 @@ void *jwt_b64_decode(const char *src, int *ret_len)
 
 	*ret_len = jwt_Base64decode(buf, new);
 
+	if (*ret_len == 0) {
+		jwt_freemem(buf);
+		buf = NULL;
+	}
+
 	return buf;
 }
 
@@ -1092,6 +1097,25 @@ static int jwt_dump(jwt_t *jwt, char **buf, int pretty)
 		ret = jwt_write_body(jwt, buf, pretty);
 
 	return ret;
+}
+
+char *jwt_dump_grants_str(jwt_t *jwt, int pretty)
+{
+	char *out = NULL;
+	int err;
+
+	errno = 0;
+
+	err = jwt_write_body(jwt, &out, pretty);
+
+	if (err) {
+		errno = err;
+		if (out)
+			jwt_freemem(out);
+		out = NULL;
+	}
+
+	return out;
 }
 
 int jwt_dump_fp(jwt_t *jwt, FILE *fp, int pretty)
