@@ -55,7 +55,6 @@ jobs:
         - mkdir "${VCPKG_DIR}"
         - pushd .
         - choco install visualstudio2022community -y
-        - where cl.exe
         - cd ${TMP_DIR}
         - git clone https://github.com/microsoft/vcpkg
         - cd ${VCPKG_DIR}
@@ -68,10 +67,10 @@ jobs:
         - dir "${VCPKG_DIR}\scripts\buildsystems"
         - export PATH=${PATH}:"${VCPKG_DIR}"
         - popd
-        - travis_wait 45 vcpkg.exe install --x-install-root=${CACHE_DIR}
+        - travis_wait 45 vcpkg.exe install --x-install-root=${CACHE_DIR} --debug
         - pwd
         - dir
-        - cmake . -DCMAKE_TOOLCHAIN_FILE="${VCPKG_DIR}\scripts\buildsystems\vcpkg.cmake"
+        - cmake . -DCMAKE_TOOLCHAIN_FILE="${VCPKG_DIR}\scripts\buildsystems\vcpkg.cmake" --debug-output
         - cmake --build . --config RelWithDebInfo
         - ctest -C Debug -VV
 

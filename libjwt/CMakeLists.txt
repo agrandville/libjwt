@@ -1,6 +1,8 @@
 include(FetchContent)
 include(FindPkgConfig)
 
+enable_language(C)
+
 set (TARGET_NAME ${PROJECT_NAME})
 
 option (BUILD_SHARED_LIBS "Build libjwt as shared library instead as static one." OFF)
@@ -13,10 +15,14 @@ if (UNIX)
 endif ()
 
 if (BUILD_SHARED_LIBS)
-	set (LIBRARY_TYPE SHARED)
+	set (LIBRARY_TYPE SHARED CACHE INTERNAL "")
+	if(MSVC)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL$<$<CONFIG:Debug>:Debug>")
+	endif()
 else ()
-	set (LIBRARY_TYPE STATIC)
+	set (LIBRARY_TYPE STATIC CACHE INTERNAL "")
 	if (MSVC)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 		set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Z7")
 		set (CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} /Z7")
 		if (${ENABLE_DEBUG_INFO_IN_RELEASE})
@@ -48,15 +54,7 @@ else ()
 endif ()
 
 if (USE_INSTALLED_JANSSON)
-    PKG_SEARCH_MODULE( JANSSON jansson )
-else()
-    FetchContent_Declare(
-    jansson
-    GIT_REPOSITORY https://github.com/akheron/jansson.git
-    GIT_TAG        v2.14
-    )
-
-    FetchContent_MakeAvailable(jansson)
+	find_package(jansson CONFIG REQUIRED)
 endif()
 
 write_file(${CMAKE_CURRENT_BINARY_DIR}/config.h "")
@@ -68,9 +66,7 @@ add_library (${TARGET_NAME} ${LIBRARY_TYPE} ${SOURCE_FILES})
 
 target_include_directories (${TARGET_NAME} PRIVATE
 	${SSL_LIBRARY_INCLUDE_DIR}
-       ${jansson_SOURCE_DIR}/src
-       ${jansson_SOURCE_DIR}/android
-       ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}
 	)
 
 # Need for using the project by add_subdirectory
@@ -102,7 +98,6 @@ endif ()
 
 target_link_libraries (${TARGET_NAME}
 	debug ${SSL_LIBRARIES_DEBUG} optimized ${SSL_LIBRARIES_OPTIMIZED}
-	jansson
 	)
 
 install (TARGETS ${TARGET_NAME}
